@@ -419,12 +419,5 @@ def get_weather():
 @app.route('/')
 def index():
     return redirect(url_for('login'))
-
-# for user in users.find():
-#     print(user)
-
-# result = users.delete_many({})
-# print(f"{result.deleted_count} users deleted.")
-
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5002)
