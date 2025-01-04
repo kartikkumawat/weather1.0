@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Shared Weather{% endblock %}
+
+{% block styles %}
+<style>
+    .share-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        background: white;
+        padding: 2rem;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .weather-info {
+        margin-top: 2rem;
+        padding: 2rem;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="share-container">
+    <h2>Shared Weather Information</h2>
+    <h3><strong>City:</strong> {{ city_info }}</h3>
+    <div class="weather-info">
+        {{ weather_data|safe }}
+    </div>
+</div>
+{% endblock %}

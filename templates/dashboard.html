@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block styles %}
+<style>
+    .weather-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .weather-form {
+        max-width: 600px;
+        margin: 0 auto 2rem auto;
+    }
+    
+    .weather-display {
+        text-align: center;
+        margin-top: 2rem;
+        padding: 2rem;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    
+    .btn:hover {
+        background: #0056b3;
+    }
+    
+    .share-btn {
+        background: #28a745;
+    }
+    
+    .share-btn:hover {
+        background: #218838;
+    }
+    
+    .share-url {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+    }
+    .weather-display {
+        background-color: #f0f8ff;
+        border-radius: 10px;
+        padding: 20px;
+        width: 90%;
+        max-width: 600px;
+        margin: 20px auto;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .weather-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    
+    .weather-card {
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        text-align: left;
+        font-size: 1rem;
+    }
+    
+    .weather-card strong {
+        color: #4caf50;
+    }
+    
+    .weather-card span {
+        color: #333333;
+        font-weight: 600;
+    }
+    
+    .btn {
+        background-color: #4caf50;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+        transition: background-color 0.3s ease;
+    }
+    
+    .btn:hover {
+        background-color: #45a049;
+    }
+    
+    .share-url {
+        margin-top: 1rem;
+        font-size: 1rem;
+        color: #4caf50;
+    }
+    
+    .share-btn {
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+    
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="weather-container">
+    <h2 style="text-align: center; margin-bottom: 2rem;">Weather Dashboard</h2>
+    
+    <div class="weather-form">
+        <form id="weatherForm">
+            <div class="form-group">
+                <label for="city">City</label>
+                <input type="text" id="city" name="city" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="datetime">Date and Time</label>
+                <input type="datetime-local" id="datetime" name="datetime" required>
+            </div>
+            
+            <button type="submit" class="btn">Get Weather</button>
+        </form>
+    </div>
+    
+    <div id="weatherDisplay" class="weather-display" style="display: none;">
+        <h3>Weather Information</h3>
+        <h3 id="cityName" class="city-name"></h3>
+        <div id="weatherInfo" class="weather-info">
+            <div class="weather-card">
+                <p><strong>Temperature:</strong> <span id="temperature"></span>°C</p>
+            </div>
+            <div class="weather-card">
+                <p><strong>Condition:</strong> <span id="condition"></span></p>
+            </div>
+            <div class="weather-card">
+                <p><strong>Feels Like:</strong> <span id="feelsLike"></span>°C</p>
+            </div>
+            <div class="weather-card">
+                <p><strong>Humidity:</strong> <span id="humidity"></span>%</p>
+            </div>
+            <div class="weather-card">
+                <p><strong>Dew Point:</strong> <span id="dewPoint"></span>°C</p>
+            </div>
+            <div class="weather-card">
+                <p><strong>Precipitation:</strong> <span id="precipitation"></span> mm</p>
+            </div>
+            <div class="weather-card">
+                <p><strong>Wind Speed:</strong> <span id="windSpeed"></span> m/s</p>
+            </div>
+            <div class="weather-card">
+                <p><strong>Wind Gust:</strong> <span id="windGust"></span> m/s</p>
+            </div>
+            <div class="weather-card">
+                <p><strong>Visibility:</strong> <span id="visibility"></span> km</p>
+            </div>
+            <div class="weather-card">
+                <p><strong>UV Index:</strong> <span id="uvIndex"></span></p>
+            </div>
+        </div>
+        <button onclick="shareWeather()" class="btn share-btn" style="margin-top: 1rem;">Share Weather</button>
+        <div id="shareUrl" class="share-url" style="display: none;"></div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.getElementById('weatherForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+    
+        const city = document.getElementById('city').value;
+        const datetime = document.getElementById('datetime').value;
+    
+        try {
+            const response = await fetch(`/get_weather?city=${encodeURIComponent(city)}&datetime=${encodeURIComponent(datetime)}`);
+            const data = await response.json();
+    
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+    
+            const cityInfo = document.getElementById('cityName')
+            cityInfo.textContent = `Weather in ${data.city}`;
+            const weatherInfo = document.getElementById('weatherInfo');
+            weatherInfo.innerHTML = `
+            <p><strong>Temperature:</strong> ${data.temperature}°C</p>
+            <p><strong>Condition:</strong> ${data.condition}</p>
+            <p><strong>Feels Like:</strong> ${data.feelslike}°C</p>
+            <p><strong>Humidity:</strong> ${data.humidity}%</p>
+            <p><strong>Dew Point:</strong> ${data.dewPoint}°C</p>
+            <p><strong>Precipitation:</strong> ${data.precipitation} mm</p>
+            <p><strong>Wind Speed:</strong> ${data.windspeed} km/h</p>
+            <p><strong>Wind Gust:</strong> ${data.windgust} km/h</p>
+            <p><strong>Visibility:</strong> ${data.visibility} km</p>
+            <p><strong>UV Index:</strong> ${data.uvindex}</p>
+            `;
+    
+            document.getElementById('weatherDisplay').style.display = 'block';
+        } catch (error) {
+            alert('Error fetching weather data');
+        }
+    });
+    
+    async function shareWeather() {
+        const weatherInfo = document.getElementById('weatherInfo').innerHTML;
+        const city = document.getElementById('city').value;  // Get the city input
+    
+        try {
+            const response = await fetch('/share-weather', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `weather_data=${encodeURIComponent(weatherInfo)}&city=${encodeURIComponent(city)}`
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                const shareUrl = document.getElementById('shareUrl');
+                shareUrl.innerHTML = `Share this link: <a href="${data.short_url}">${data.short_url}</a>`;
+                shareUrl.style.display = 'block';
+            } else {
+                alert('Error generating share link');
+            }
+        } catch (error) {
+            alert('Error generating share link');
+        }
+    }
+    
+    
+</script>
+{% endblock %}
+{% endblock %}
